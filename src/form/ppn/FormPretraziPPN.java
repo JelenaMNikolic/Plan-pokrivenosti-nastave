@@ -5,10 +5,21 @@
  */
 package form.ppn;
 
+import controller.Controller;
 import domain.Nastavnik;
+import domain.PlanPokrivenostiNastave;
+import domain.StavkaPPN;
 import form.FormMode;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import model.PlanoviTableModel;
+import model.TableStavkeModel;
 import session.Session;
+import slucajkoriscenja.SlucajKoriscenja;
+import validator.Validator;
 
 /**
  *
@@ -23,6 +34,10 @@ public class FormPretraziPPN extends javax.swing.JFrame {
         initComponents();
         Nastavnik ulogovan = Session.getInstance().getUlogovan();
         jLblUlogovan.setText(ulogovan.toString());
+        setTitle("Planovi pokrivenosti nastave");
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        popuniTabeluPPN();
+        popuniTabeluStavke();
     }
 
     /**
@@ -38,13 +53,14 @@ public class FormPretraziPPN extends javax.swing.JFrame {
         jLblUlogovan = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTblPlanovi = new javax.swing.JTable();
-        btnIzaberiPlan = new javax.swing.JButton();
+        tblPlanovi = new javax.swing.JTable();
+        btnPrikaziStavke = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTblStavkePPN = new javax.swing.JTable();
+        tblStavkePPN = new javax.swing.JTable();
         btnIzmeniPPN = new javax.swing.JButton();
-        btnPrikaziStavku = new javax.swing.JButton();
+        btnPrikaziPPN = new javax.swing.JButton();
+        btnObrisiPPN = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -69,7 +85,7 @@ public class FormPretraziPPN extends javax.swing.JFrame {
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Planovi pokrivenosti"));
 
-        jTblPlanovi.setModel(new javax.swing.table.DefaultTableModel(
+        tblPlanovi.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -77,9 +93,14 @@ public class FormPretraziPPN extends javax.swing.JFrame {
 
             }
         ));
-        jScrollPane1.setViewportView(jTblPlanovi);
+        jScrollPane1.setViewportView(tblPlanovi);
 
-        btnIzaberiPlan.setText("Prikazi PPN");
+        btnPrikaziStavke.setText("Prikazi stavke");
+        btnPrikaziStavke.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrikaziStavkeActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -91,7 +112,7 @@ public class FormPretraziPPN extends javax.swing.JFrame {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnIzaberiPlan, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnPrikaziStavke, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -100,24 +121,21 @@ public class FormPretraziPPN extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(btnIzaberiPlan)
+                .addComponent(btnPrikaziStavke)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Stavke"));
 
-        jTblStavkePPN.setModel(new javax.swing.table.DefaultTableModel(
+        tblStavkePPN.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
-        jScrollPane2.setViewportView(jTblStavkePPN);
+        jScrollPane2.setViewportView(tblStavkePPN);
 
         btnIzmeniPPN.setText("Izmeni PPN");
         btnIzmeniPPN.addActionListener(new java.awt.event.ActionListener() {
@@ -126,10 +144,17 @@ public class FormPretraziPPN extends javax.swing.JFrame {
             }
         });
 
-        btnPrikaziStavku.setText("Prikazi PPN");
-        btnPrikaziStavku.addActionListener(new java.awt.event.ActionListener() {
+        btnPrikaziPPN.setText("Prikazi PPN");
+        btnPrikaziPPN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPrikaziStavkuActionPerformed(evt);
+                btnPrikaziPPNActionPerformed(evt);
+            }
+        });
+
+        btnObrisiPPN.setText("Obrisi PPN");
+        btnObrisiPPN.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnObrisiPPNActionPerformed(evt);
             }
         });
 
@@ -141,11 +166,13 @@ public class FormPretraziPPN extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                    .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnIzmeniPPN)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnPrikaziStavku)))
+                        .addComponent(btnObrisiPPN, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnIzmeniPPN, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnPrikaziPPN, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -156,7 +183,8 @@ public class FormPretraziPPN extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnIzmeniPPN)
-                    .addComponent(btnPrikaziStavku))
+                    .addComponent(btnPrikaziPPN)
+                    .addComponent(btnObrisiPPN))
                 .addContainerGap())
         );
 
@@ -187,15 +215,73 @@ public class FormPretraziPPN extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnPrikaziStavkuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrikaziStavkuActionPerformed
-        Session.getInstance().setMode(FormMode.PRIKAZI);
-        JDialog ppn = new DialogNoviPPN(this, true);
-    }//GEN-LAST:event_btnPrikaziStavkuActionPerformed
+    private void btnPrikaziPPNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrikaziPPNActionPerformed
+        int row = tblPlanovi.getSelectedRow();
+        if (Validator.getInstance().izabranRed(row)) {
+            PlanoviTableModel model = (PlanoviTableModel) tblPlanovi.getModel();
+            PlanPokrivenostiNastave ppn = model.getPlan(row);
+            Session.getInstance().setTrenutniSlucajKoriscenja(SlucajKoriscenja.SK_PRIKAZI_PPN);
+            Session.getInstance().getParametriSK().clear();
+            Session.getInstance().getParametriSK().put("ppn", ppn);
+            JDialog ppnDialog = new DialogNoviPPN(this, true, FormMode.PRIKAZI);
+            ppnDialog.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Izaberite plan.");
+        }
+    }//GEN-LAST:event_btnPrikaziPPNActionPerformed
 
     private void btnIzmeniPPNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIzmeniPPNActionPerformed
-        Session.getInstance().setMode(FormMode.IZMENI);
-        JDialog ppn = new DialogNoviPPN(this, true);
+        int row = tblPlanovi.getSelectedRow();
+        if (Validator.getInstance().izabranRed(row)) {
+            PlanoviTableModel model = (PlanoviTableModel) tblPlanovi.getModel();
+            PlanPokrivenostiNastave ppn = model.getPlan(row);
+            Session.getInstance().setTrenutniSlucajKoriscenja(SlucajKoriscenja.SK_IZMENI_PPN);
+            Session.getInstance().getParametriSK().clear();
+            Session.getInstance().getParametriSK().put("ppn", ppn);
+            JDialog ppnDialog = new DialogNoviPPN(this, true, FormMode.IZMENI);
+            ppnDialog.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Izaberite plan.");
+        }
     }//GEN-LAST:event_btnIzmeniPPNActionPerformed
+
+    private void btnPrikaziStavkeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrikaziStavkeActionPerformed
+        int row = tblPlanovi.getSelectedRow();
+        if (Validator.getInstance().izabranRed(row)) {
+            PlanoviTableModel modelPlanovi = (PlanoviTableModel) tblPlanovi.getModel();
+            PlanPokrivenostiNastave izabran = modelPlanovi.getPlan(row);
+            try {
+                List<StavkaPPN> stavkeZaPlan = Controller.getInstance().getAllStavke(izabran.getPpnId());
+                TableStavkeModel modelStavke = (TableStavkeModel) tblStavkePPN.getModel();
+                modelStavke.setData(stavkeZaPlan);
+            } catch (Exception ex) {
+                Logger.getLogger(FormPretraziPPN.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Izaberite plan.");
+        }
+    }//GEN-LAST:event_btnPrikaziStavkeActionPerformed
+
+    private void btnObrisiPPNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnObrisiPPNActionPerformed
+        int row = tblPlanovi.getSelectedRow();
+        if (Validator.getInstance().izabranRed(row)) {
+            try {
+                PlanoviTableModel model = (PlanoviTableModel) tblPlanovi.getModel();
+                PlanPokrivenostiNastave ppn = model.getPlan(row);
+                Session.getInstance().setTrenutniSlucajKoriscenja(SlucajKoriscenja.SK_OBRISI_PPN);
+                String poruka = Controller.getInstance().obrisiPPN(ppn);
+                JOptionPane.showMessageDialog(this, poruka);
+                model.removePPN(row);
+                TableStavkeModel stavkeModel = (TableStavkeModel) tblStavkePPN.getModel();
+                stavkeModel.clearStavke();
+            } catch (Exception ex) {
+                Logger.getLogger(FormPretraziPPN.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage());
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Izaberite plan.");
+        }
+    }//GEN-LAST:event_btnObrisiPPNActionPerformed
 
     /**
      * @param args the command line arguments
@@ -234,16 +320,38 @@ public class FormPretraziPPN extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnIzaberiPlan;
     private javax.swing.JButton btnIzmeniPPN;
-    private javax.swing.JButton btnPrikaziStavku;
+    private javax.swing.JButton btnObrisiPPN;
+    private javax.swing.JButton btnPrikaziPPN;
+    private javax.swing.JButton btnPrikaziStavke;
     private javax.swing.JLabel jLblUlogovan;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTblPlanovi;
-    private javax.swing.JTable jTblStavkePPN;
+    private javax.swing.JTable tblPlanovi;
+    private javax.swing.JTable tblStavkePPN;
     // End of variables declaration//GEN-END:variables
+
+    private void popuniTabeluPPN() {
+        try {
+            PlanoviTableModel model = new PlanoviTableModel(Controller.getInstance().getAllPPN());
+            tblPlanovi.setModel(model);
+        } catch (Exception ex) {
+            Logger.getLogger(FormPretraziPPN.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void popuniTabeluStavke() {
+        TableStavkeModel model = new TableStavkeModel();
+        tblStavkePPN.setModel(model);
+    }
+
+    void updateData(PlanPokrivenostiNastave ppn) {
+        PlanoviTableModel model = (PlanoviTableModel) tblPlanovi.getModel();
+        model.updatePlanovi(ppn);
+        TableStavkeModel modelStavke = (TableStavkeModel) tblStavkePPN.getModel();
+        modelStavke.setData(ppn.getStavkePPN());
+    }
 }

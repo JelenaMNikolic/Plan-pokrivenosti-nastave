@@ -23,8 +23,8 @@ import storage.AbstractStoragePredmet;
  *
  * @author jelena
  */
-public class StorageDatabasePredmet extends AbstractStoragePredmet{
-    
+public class StorageDatabasePredmet extends AbstractStoragePredmet {
+
     @Override
     public List<Predmet> getAll() throws Exception {
         List<Predmet> predmeti = new LinkedList<>();
@@ -33,13 +33,13 @@ public class StorageDatabasePredmet extends AbstractStoragePredmet{
             String query = "SELECT * FROM predmet";
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(query);
-            while(rs.next()) {
+            while (rs.next()) {
                 int sifra = rs.getInt(1);
                 String naziv = rs.getString(2);
                 String opis = rs.getString(3);
                 String cilj = rs.getString(4);
                 int sifraKat = rs.getInt(5);
-                Katedra katedra = Controller.getInstance().getKatedra(sifraKat);
+                Katedra katedra = Controller.getInstance().getKatedraById(sifraKat);
                 Predmet predmet = new Predmet(sifra, naziv, opis, cilj, katedra);
                 predmeti.add(predmet);
             }
@@ -48,6 +48,31 @@ public class StorageDatabasePredmet extends AbstractStoragePredmet{
             return predmeti;
         } catch (SQLException ex) {
             throw new Exception("Neuspela konekcija." + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public Predmet getPredmetById(int predmetId) throws Exception {
+        try {
+            Predmet p = null;
+            Connection connection = DatabaseConnection.getInstance().getConnection();
+            String query = "SELECT * FROM predmet WHERE sifra_predmeta = " + predmetId;
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            if(rs.next()) {
+                int id = rs.getInt(1);
+                String naziv = rs.getString(2);
+                String opis = rs.getString(3);
+                String cilj = rs.getString(4);
+                int katedraId = rs.getInt(5);
+                Katedra katedra = Controller.getInstance().getKatedraById(katedraId);
+                p = new Predmet(predmetId, naziv, opis, cilj, katedra);
+            }
+            rs.close();
+            statement.close();
+            return p;
+        } catch (SQLException ex) {
+            throw new SQLException("Neuspela konekcija! " + ex.getMessage(), ex);
         }
     }
 }

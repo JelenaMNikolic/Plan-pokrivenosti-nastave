@@ -19,7 +19,6 @@ public class MemoryStoragePlanPokrivenostiNastave {
 
     public MemoryStoragePlanPokrivenostiNastave() {
         predmetNastavnik = new ArrayList<>();
-        predmetNastavnik.add(new PlanPokrivenostiNastave(1, "2016", null));
     }
     
     

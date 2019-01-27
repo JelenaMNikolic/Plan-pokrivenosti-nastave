@@ -6,29 +6,31 @@
 package model;
 
 import domain.StavkaPPN;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 /**
  *
- * @author Korisnik
+ * @author Sanja
  */
-// cela ova klasa nije dobra, ideja je tu ali realizacija nije ok
-public class PPNTableModel extends AbstractTableModel {
+public class TableStavkeModel extends AbstractTableModel{
 
-    private List<StavkaPPN> stavke;
-    private String[] header = {"Predmet", "Nastavnik"};
+    List<StavkaPPN> stavke;
+    String[] header = {"Sifra", "Predmet", "Nastavnik"};
 
-    public PPNTableModel(List<StavkaPPN> stavke) {
+    public TableStavkeModel(List<StavkaPPN> stavke) {
         this.stavke = stavke;
     }
 
+    public TableStavkeModel() {
+        stavke = new ArrayList<>();
+    }
+
+    
     @Override
     public int getRowCount() {
-        if (stavke != null && stavke.size() != 0) {
-            return stavke.size();
-        }
-        return 0;
+        return stavke.size();
     }
 
     @Override
@@ -41,8 +43,10 @@ public class PPNTableModel extends AbstractTableModel {
         StavkaPPN stavka = stavke.get(rowIndex);
         switch (columnIndex) {
             case 0:
-                return stavka.getPredmet();
+                return stavka.getStavkaPPNId();
             case 1:
+                return stavka.getPredmet();
+            case 2:
                 return stavka.getNastavnik();
             default:
                 return "N/A";
@@ -53,28 +57,15 @@ public class PPNTableModel extends AbstractTableModel {
     public String getColumnName(int column) {
         return header[column];
     }
-
-    public void addStavka(StavkaPPN stavka) {
-        stavke.add(stavka);
-        fireTableDataChanged();
-    }
-
-    public void obrisiStavku(int row) {
-        stavke.remove(row);
-        fireTableDataChanged();
-    }
-
-    public void izmeniStavku(StavkaPPN stavka, int row) {
-        stavke.set(row, stavka);
-        fireTableDataChanged();
-    }
-
+    
     public void setData(List<StavkaPPN> stavke) {
         this.stavke = stavke;
         fireTableDataChanged();
     }
 
-    public List<StavkaPPN> getStavke() {
-        return stavke;
+    public void clearStavke() {
+        stavke.clear();
+        fireTableDataChanged();
     }
+    
 }

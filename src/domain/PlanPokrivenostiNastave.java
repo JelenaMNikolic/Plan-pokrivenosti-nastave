@@ -6,6 +6,7 @@
 package domain;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,16 +16,16 @@ import java.util.List;
 public class PlanPokrivenostiNastave {
     
     private int ppnId;
-    private String godina;
+    private Date godina;
     private List<StavkaPPN> stavkePPN;
 
     public PlanPokrivenostiNastave() {
     }
 
-    public PlanPokrivenostiNastave(int ppnId, String godina, List<StavkaPPN> stavkePPN) {
+    public PlanPokrivenostiNastave(int ppnId, Date godina, List<StavkaPPN> stavkePPN) {
         this.ppnId = ppnId;
         this.godina = godina;
-        stavkePPN = new ArrayList<>();
+        this.stavkePPN = stavkePPN;
     }
 
     public int getPpnId() {
@@ -35,13 +36,33 @@ public class PlanPokrivenostiNastave {
         this.ppnId = ppnId;
     }
 
-    public String getGodina() {
+    public Date getGodina() {
         return godina;
     }
 
-    public void setGodina(String godina) {
+    public void setGodina(Date godina) {
         this.godina = godina;
     } 
+
+    public List<StavkaPPN> getStavkePPN() {
+        return stavkePPN;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PlanPokrivenostiNastave other = (PlanPokrivenostiNastave) obj;
+        if (this.ppnId != other.ppnId) {
+            return false;
+        }
+        return true;
+    }
+    
     
     
 }

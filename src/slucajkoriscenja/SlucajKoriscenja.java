@@ -24,4 +24,6 @@ public interface SlucajKoriscenja {
     public static final int SK_IZMENI_PPN = 12;
     public static final int SK_PRETRAZI_PPN = 13;
     public static final int SK_PRIKAZI_PPN = 14;
+    public static final int SK_OBRISI_PPN = 15;
+    
 }

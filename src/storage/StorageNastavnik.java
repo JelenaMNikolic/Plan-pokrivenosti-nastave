@@ -14,8 +14,6 @@ import java.util.List;
  */
 public interface StorageNastavnik {
 
-    Nastavnik findById(int nastavnikId) throws Exception;
-
     Nastavnik findByUserAndPass(String username, String password) throws Exception;
 
     List<Nastavnik> getAll() throws Exception;
@@ -25,4 +23,6 @@ public interface StorageNastavnik {
     int saveNastavnik(Nastavnik nastavnik) throws Exception;
 
     String deleteNastavnik(Nastavnik nastavnik) throws Exception;
+
+    Nastavnik getNastavnikById(int nastavnikId) throws Exception;
 }

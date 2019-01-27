@@ -6,8 +6,10 @@
 package validator;
 
 import domain.Nastavnik;
+import domain.PlanPokrivenostiNastave;
 import domain.Predmet;
 import domain.StavkaPPN;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,6 +53,15 @@ public class Validator {
         }
         return true;
     }
-    
+
+    public boolean postoji(PlanPokrivenostiNastave ppn) {
+        //proveri da li ima vec plan za tu godinu u bazi
+        return false;
+    }
+
+    public boolean uneteStavke(List<StavkaPPN> stavke) {
+        return !stavke.isEmpty();
+    }
+
     
 }

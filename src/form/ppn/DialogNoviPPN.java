@@ -13,11 +13,18 @@ import domain.Predmet;
 import domain.StavkaPPN;
 import form.FormMain;
 import form.FormMode;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import model.PPNTableModel;
 import session.Session;
+import slucajkoriscenja.SlucajKoriscenja;
 import validator.Validator;
 
 /**
@@ -26,7 +33,6 @@ import validator.Validator;
  */
 public class DialogNoviPPN extends javax.swing.JDialog {
 
-    PlanPokrivenostiNastave ppn;
     List<StavkaPPN> stavke;
     int izmena = 0;
 
@@ -48,9 +54,8 @@ public class DialogNoviPPN extends javax.swing.JDialog {
         this.setLocationRelativeTo(null);
         stavke = new ArrayList<>();
         populateTable();
-        postaviKomponente(formMode);
         populateCombo();
-        ppn = new PlanPokrivenostiNastave();
+        postaviKomponente(formMode);
     }
 
     /**
@@ -314,6 +319,10 @@ public class DialogNoviPPN extends javax.swing.JDialog {
         Nastavnik nastavnik = (Nastavnik) cmbNastavnik.getSelectedItem();
         if (Validator.getInstance().imaStavka(stavke, predmet, nastavnik)) {
             StavkaPPN stavka = new StavkaPPN(-1, predmet, nastavnik);
+            if(Session.getInstance().getTrenutniSlucajKoriscenja() == SlucajKoriscenja.SK_IZMENI_PPN) {
+                PlanPokrivenostiNastave trenutni = (PlanPokrivenostiNastave) Session.getInstance().getParametriSK().get("ppn");
+                stavka.setStavkaPPNId(trenutni.getPpnId());
+            }
             PPNTableModel model = (PPNTableModel) tblStavke.getModel();
             if (izmena == 1) {
                 int row = tblStavke.getSelectedRow();
@@ -353,7 +362,39 @@ public class DialogNoviPPN extends javax.swing.JDialog {
     }//GEN-LAST:event_btnIzmeniStavkuActionPerformed
 
     private void btnIzmeniActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIzmeniActionPerformed
-        // TODO add your handling code here:
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+            String god = txtGodina.getText().trim();
+            if (!god.isEmpty()) {
+                Date godina = sdf.parse(god);
+                PlanPokrivenostiNastave zaIzmenu = (PlanPokrivenostiNastave) Session.getInstance().getParametriSK().get("ppn");
+                PPNTableModel model = (PPNTableModel) tblStavke.getModel();
+                stavke = model.getStavke();
+                PlanPokrivenostiNastave ppn = new PlanPokrivenostiNastave(zaIzmenu.getPpnId(), godina, stavke);
+                try {
+                    if (!Validator.getInstance().postoji(ppn)) {
+                        if (Validator.getInstance().uneteStavke(stavke)) {
+                            String poruka = Controller.getInstance().izmeniPPN(ppn);
+                            JOptionPane.showMessageDialog(this, poruka);
+                            FormPretraziPPN pretrazi = (FormPretraziPPN) this.getParent();
+                            pretrazi.updateData(ppn);
+                            this.dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Unesite stavke plana.");
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Plan za zadatu godinu vec postoji.");
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(DialogNoviPPN.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showMessageDialog(this, ex.getMessage());
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Unesite godinu.");
+            }
+        } catch (ParseException ex) {
+            Logger.getLogger(DialogNoviPPN.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnIzmeniActionPerformed
 
     private void btnOtkaziActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOtkaziActionPerformed
@@ -362,7 +403,34 @@ public class DialogNoviPPN extends javax.swing.JDialog {
     }//GEN-LAST:event_btnOtkaziActionPerformed
 
     private void btnSacuvajPPNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSacuvajPPNActionPerformed
-        //implementacija cuvanja
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+            String god = txtGodina.getText().trim();
+            if (!god.isEmpty()) {
+                Date godina = sdf.parse(god);
+                PlanPokrivenostiNastave ppn = new PlanPokrivenostiNastave(-1, godina, stavke);
+                try {
+                    if (!Validator.getInstance().postoji(ppn)) {
+                        if (Validator.getInstance().uneteStavke(stavke)) {
+                            String poruka = Controller.getInstance().savePPN(ppn);
+                            JOptionPane.showMessageDialog(this, poruka);
+                            this.dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Unesite stavke plana.");
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Plan za zadatu godinu vec postoji.");
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(DialogNoviPPN.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showMessageDialog(this, ex.getMessage());
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Unesite godinu.");
+            }
+        } catch (ParseException ex) {
+            Logger.getLogger(DialogNoviPPN.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnSacuvajPPNActionPerformed
 
     /**
@@ -484,6 +552,8 @@ public class DialogNoviPPN extends javax.swing.JDialog {
                 btnSacuvajPPN.setVisible(false);
                 btnOK.setVisible(false);
                 btnOtkazi.setVisible(false);
+                postaviPlan();
+                setTitle("Izmena plana pokrivenosti nastave");
                 break;
             case PRIKAZI:
                 pnlStavke.setVisible(false);
@@ -491,6 +561,11 @@ public class DialogNoviPPN extends javax.swing.JDialog {
                 btnIzmeni.setVisible(false);
                 btnSacuvajPPN.setVisible(false);
                 btnOtkazi.setVisible(false);
+                btnIzmeniStavku.setVisible(false);
+                btnObrisi.setVisible(false);
+                txtGodina.setEditable(false);
+                postaviPlan();
+                setTitle("Prikaz plana pokrivenosti nastave");
                 break;
         }
     }
@@ -512,5 +587,16 @@ public class DialogNoviPPN extends javax.swing.JDialog {
                 btnOtkazi.setVisible(false);
                 break;
         }
+    }
+
+    private void postaviPlan() {
+        PlanPokrivenostiNastave ppn = (PlanPokrivenostiNastave) Session.getInstance().getParametriSK().get("ppn");
+        Calendar c = Calendar.getInstance();
+        c.setTime(ppn.getGodina());
+        int godina = c.get(Calendar.YEAR);
+        txtGodina.setText(godina + "");
+        PPNTableModel model = (PPNTableModel) tblStavke.getModel();
+        model.setData(ppn.getStavkePPN());
+        stavke = ppn.getStavkePPN();
     }
 }

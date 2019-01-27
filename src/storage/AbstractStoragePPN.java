@@ -9,6 +9,6 @@ package storage;
  *
  * @author jelena
  */
-public class AbstractStoragePPN implements StoragePPN{
+public abstract class AbstractStoragePPN implements StoragePPN{
     
 }

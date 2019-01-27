@@ -5,17 +5,10 @@
  */
 package storage;
 
-import domain.Predmet;
-import java.util.List;
-
 /**
  *
  * @author Sanja
  */
-public interface StoragePredmet {
-
-    List<Predmet> getAll() throws Exception;
-
-    Predmet getPredmetById(int predmetId) throws Exception;
+public abstract class AbstractStorageStavkePPN implements StorageStavkePPN{
     
 }

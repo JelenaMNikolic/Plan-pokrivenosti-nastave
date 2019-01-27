@@ -5,17 +5,15 @@
  */
 package storage;
 
-import domain.Predmet;
+import domain.StavkaPPN;
 import java.util.List;
 
 /**
  *
  * @author Sanja
  */
-public interface StoragePredmet {
+public interface StorageStavkePPN {
 
-    List<Predmet> getAll() throws Exception;
+    List<StavkaPPN> getAllStavke(int stavkeId) throws Exception;
 
-    Predmet getPredmetById(int predmetId) throws Exception;
-    
 }

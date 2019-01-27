@@ -41,7 +41,7 @@ public class StorageDatabaseNastavnik extends AbstractStorageNastavnik {
                 String pozicija = rs.getString(6);
                 String konsultacije = rs.getString(7);
                 String kabinet = rs.getString(8);
-                Katedra katedra = Controller.getInstance().getKatedra(rs.getInt(9));
+                Katedra katedra = Controller.getInstance().getKatedraById(rs.getInt(9));
                 Nastavnik nastavnik = new Nastavnik(sifra, ime, prezime, email, password, pozicija, konsultacije, kabinet, katedra);
                 nastavnici.add(nastavnik);
             }
@@ -51,11 +51,6 @@ public class StorageDatabaseNastavnik extends AbstractStorageNastavnik {
         } catch (SQLException ex) {
             throw new Exception("Neuspela konekcija." + ex.getMessage(), ex);
         }
-    }
-
-    @Override
-    public Nastavnik findById(int nastavnikId) {
-        return null;
     }
 
     @Override
@@ -77,7 +72,7 @@ public class StorageDatabaseNastavnik extends AbstractStorageNastavnik {
                 String konsultacije = rs.getString(7);
                 String kabinet = rs.getString(8);
                 int sifraKatedre = rs.getInt(9);
-                Katedra k = Controller.getInstance().getKatedra(sifraKatedre);
+                Katedra k = Controller.getInstance().getKatedraById(sifraKatedre);
                 return new Nastavnik(sifra, ime, prezime, mail, pass, pozicija, konsultacije, kabinet, k);
             }
         } catch (SQLException ex) {
@@ -162,6 +157,35 @@ public class StorageDatabaseNastavnik extends AbstractStorageNastavnik {
             }
             statement.close();
             return poruka;
+        } catch (SQLException ex) {
+            throw new SQLException("Neuspela konekcija! " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public Nastavnik getNastavnikById(int nastavnikId) throws Exception {
+        try {
+            Nastavnik n = null;
+            Connection connection = DatabaseConnection.getInstance().getConnection();
+            String query = "SELECT * FROM nastavnik WHERE sifra_nastavnika = " + nastavnikId;
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(query);
+            if(rs.next()) {
+                int id = rs.getInt(1);
+                String ime = rs.getString(2);
+                String prezime = rs.getString(3);
+                String email = rs.getString(4);
+                String password = rs.getString(5);
+                String pozicija = rs.getString(6);
+                String konsultacije = rs.getString(7);
+                String kabinet = rs.getString(8);
+                int katedraId = rs.getInt(9);
+                Katedra katedra = Controller.getInstance().getKatedraById(katedraId);
+                n = new Nastavnik(nastavnikId, ime, prezime, email, password, pozicija, konsultacije, kabinet, katedra);
+            }
+            rs.close();
+            statement.close();
+            return n;
         } catch (SQLException ex) {
             throw new SQLException("Neuspela konekcija! " + ex.getMessage(), ex);
         }
